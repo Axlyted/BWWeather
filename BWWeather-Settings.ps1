@@ -160,7 +160,7 @@ $q = Add-Ctl (New-Object Windows.Forms.TextBox) 12 46 410 24 $g1
 $bs = Add-Ctl (New-Object Windows.Forms.Button) 430 45 98 26 $g1; $bs.Text = 'Search'
 $lst = Add-Ctl (New-Object Windows.Forms.ListBox) 12 78 516 110 $g1
 $hint = Add-Ctl (New-Object Windows.Forms.Label) 12 192 516 32 $g1
-$hint.Text = 'Type your town and press Search, then pick it from the list. Searches go to Open-Meteo (open-meteo.com).'
+$hint.Text = 'Type your town and press Search, then pick it from the list. Town search and weather data by Open-Meteo.com (CC BY 4.0).'
 
 $g2 = Add-Ctl (New-Object Windows.Forms.GroupBox) 10 244 540 70; $g2.Text = 'Weather there right now'
 $now = Add-Ctl (New-Object Windows.Forms.Label) 12 20 516 44 $g2

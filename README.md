@@ -8,6 +8,9 @@ answers the game's weather requests itself, with the current weather from
 
 Made for **Black & White v1.42** (the unofficial patch from bwfiles.com) on Windows 10/11.
 
+> Fan-made and free. Not affiliated with or endorsed by Lionhead Studios or Electronic
+> Arts. You need your own copy of *Black & White*. No game files are included.
+
 ## Install
 
 1. Copy this `BWWeather` folder into the game folder (next to `runblack.exe`).
@@ -126,3 +129,32 @@ first `@`.
 - **The log shows no "game connects" line:** the game didn't run its weather code.
   Check that `UseInternetWeatherSystem` is 0, and that the game thinks you're online:
   it checks with `LHCheckForInternetConnection` at startup.
+
+## Antivirus warnings
+
+Some antivirus programs may flag BWWeather's `LHMultiplayerR.dll`. It stands in for one
+of the game's own DLLs and makes web requests, and antivirus heuristics can mistake that
+for malware behaviour. The full source is in `src/`. If you'd rather not trust the
+prebuilt file, build it yourself with `build.bat`.
+
+## Credits
+
+- Weather data by [Open-Meteo.com](https://open-meteo.com/), licensed under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). BWWeather uses Open-Meteo's
+  free API, which is for non-commercial use. It makes about two requests each time the
+  game starts, plus one or two each time you search or pick a town in the settings window.
+- Town search by Open-Meteo's geocoding API, based on [GeoNames](https://www.geonames.org/)
+  (CC BY 4.0).
+- The Black & White community at [bwgame.net](https://www.bwgame.net/) and
+  [bwfiles.com](https://bwfiles.com/), and the unofficial v1.42 patch.
+
+## Licence and disclaimer
+
+BWWeather's code is released under the [MIT licence](LICENSE). It covers only this
+repository's own files.
+
+*Black & White* is a trademark of its owners. BWWeather is not affiliated with or endorsed
+by Lionhead Studios or Electronic Arts. It contains no game files: it uses the game's
+original `LHMultiplayerR.dll` from your own installation. The game is only named to say
+what BWWeather is for. `weather.bwgame.com` is named because the game asks for that
+address. BWWeather never contacts it. Use at your own risk.
