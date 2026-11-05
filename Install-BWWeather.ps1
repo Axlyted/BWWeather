@@ -129,5 +129,8 @@ Ok 'UseInternetWeatherSystem = 0'
 $town = ((Get-Content $ini | Where-Object { $_ -match '^City=' }) -replace '^City=', '').Trim()
 Write-Host ''
 if ($town) { Write-Host "BWWeather installed. The game will use the weather in $town." -ForegroundColor Green }
-else { Write-Host "BWWeather installed. Now open $ini and put your town after City=" -ForegroundColor Yellow }
-Write-Host "  bwweather.log in the game folder shows what it did each time the game starts."
+else {
+    Write-Host 'BWWeather installed. Opening the settings window - pick your town there.' -ForegroundColor Yellow
+    if (-not $env:BWWEATHER_NO_GUI) { Start-Process (Join-Path $PSScriptRoot 'BWWeather-Settings.bat') }
+}
+Write-Host '  BWWeather-Settings.bat (in the BWWeather folder) picks your town and shows whether it worked.'

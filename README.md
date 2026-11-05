@@ -13,19 +13,40 @@ Made for **Black & White v1.42** (the unofficial patch from bwfiles.com) on Wind
 1. Copy this `BWWeather` folder into the game folder (next to `runblack.exe`).
 2. Close the game and double-click **`Install-BWWeather.bat`**. If Windows asks for
    administrator rights, say yes.
-3. Open **`bwweather.ini`** in the game folder and put your town after `City=`, for
-   example `City=Manchester`. Add `Country=GB` if there are several towns with that name.
-4. Start the game. `bwweather.log` in the game folder shows the weather it used.
+3. The **settings window** opens. Type your town, press **Search**, pick it from the list
+   (it shows the region and country, so you get the right one) and press **Save**. The
+   window also shows the weather there right now, and which weather the game will get.
+4. Start the game and play into a land.
+5. Open the settings window again (**`BWWeather-Settings.bat`** in this folder). Under
+   *Did it work?* it tells you what happened the last time the game started. For
+   example: *"The game asked for the weather and got 7°C, visibility 20 km, weather type
+   2 (light rain or snow, showers). It's working."*
 
 To remove it, double-click **`Uninstall-BWWeather.bat`**. It puts the game's original
 `LHMultiplayerR.dll` back.
+
+## Settings window
+
+`BWWeather-Settings.bat` opens a small window with four parts:
+
+- **Your town:** search by name and pick from the matches. It saves the town, region,
+  country and exact coordinates to `bwweather.ini`.
+- **Weather there right now:** the current weather and the game weather type it becomes.
+- **Testing:** force one of the game's weather types, or a temperature (for example −5 to
+  try snow), to see what each looks like in the game. Set *Real weather* and an empty
+  temperature to go back.
+- **Did it work?:** reads `bwweather.log` and says in plain words whether the game asked for
+  the weather and what it got. *Open log* shows the full log.
+
+*Turn off* clears the town, so BWWeather sends nothing and the game gets no weather.
+You can also edit `bwweather.ini` by hand.
 
 ## What it changes
 
 - **`LHMultiplayerR.dll`:** the original is renamed to `LHMultiplayerR_orig.dll` and
   BWWeather's DLL takes its name. It passes all 883 of the original's functions
   straight through, except the few listed under *How it works*.
-- **`bwweather.ini`:** your settings.
+- **`bwweather.ini`:** your settings (town, region, country, coordinates, test options).
 - **Registry:** `UseInternetWeatherSystem = 0` in
   `HKCU\Software\Lionhead Studios Ltd\Black & White\BWSetup`. The game only runs its
   weather feature when this is 0. A fresh install writes 1, which turns it off.
@@ -86,8 +107,8 @@ Nothing in the game names them, so this mapping from Open-Meteo's
 | wind of 60 km/h or more | 5 (storm) |
 
 The game decides between rain and snow from the temperature. To see what each type looks
-like, set `ForceType` (2–12) in `bwweather.ini`. `ForceTemperature` sets the
-temperature, so `-5` lets you try snow.
+like, use *Testing* in the settings window (or `ForceType` 2–12 and `ForceTemperature`
+in `bwweather.ini`).
 
 ## Building
 

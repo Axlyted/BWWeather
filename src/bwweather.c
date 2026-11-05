@@ -69,7 +69,7 @@ int BWWeatherVersion(void) { return 1; }
 
 /* ---------------------------------------------------------------- settings */
 static struct {
-    char city[128], country[8];
+    char city[128], country[8], area[128];
     double lat, lon; int haveCoords;
     int forceType, haveForceTemp, forceTemp;
     char server[128];
@@ -81,6 +81,7 @@ static void load_settings(void) {
     sprintf_s(ini, MAX_PATH, "%sbwweather.ini", g_dir);
     GetPrivateProfileStringA("BWWeather", "City", "", cfg.city, sizeof cfg.city, ini);
     GetPrivateProfileStringA("BWWeather", "Country", "", cfg.country, sizeof cfg.country, ini);
+    GetPrivateProfileStringA("BWWeather", "Area", "", cfg.area, sizeof cfg.area, ini);
     GetPrivateProfileStringA("BWWeather", "Latitude", "", b, sizeof b, ini);
     if (b[0]) { cfg.lat = atof(b); GetPrivateProfileStringA("BWWeather", "Longitude", "", b, sizeof b, ini); if (b[0]) { cfg.lon = atof(b); cfg.haveCoords = 1; } }
     cfg.forceType = GetPrivateProfileIntA("BWWeather", "ForceType", 0, ini);
@@ -214,6 +215,7 @@ static DWORD WINAPI fetch_thread(LPVOID unused) {
     } else {
         strcpy_s(wx.city, sizeof wx.city, cfg.city[0] ? cfg.city : "Home");
         strcpy_s(wx.country, sizeof wx.country, cfg.country[0] ? cfg.country : "XX");
+        strcpy_s(wx.area, sizeof wx.area, cfg.area);
     }
     if (!wx.area[0]) strcpy_s(wx.area, sizeof wx.area, wx.city);
     if (!wx.country[0]) strcpy_s(wx.country, sizeof wx.country, "XX");
