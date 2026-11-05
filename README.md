@@ -72,13 +72,16 @@ class from `LHMultiplayerR.dll`. At startup it:
    `Scripts\weatherinfo.lhw`;
 2. reads the bwgame.com **login name** of the current multiplayer profile. Without one it
    skips the weather feature;
-3. sends `GET /query/?action=queryuserdata&username=…&userpassword=…&date=dd.MM.yyyy`
+3. checks that the game is online. The result comes from `LHCheckForInternetConnection`,
+   which tries Lionhead's old `www.bwgame.com`, so today it always says "offline". The
+   weather code then skips both requests;
+4. sends `GET /query/?action=queryuserdata&username=…&userpassword=…&date=dd.MM.yyyy`
    and expects `1`, then the 2-letter country code, the area and the town, each on its
    own line;
-4. sends `GET /query/?action=queryweather&country=…&area=…&city=…&date=dd.MM.yyyy` and
+5. sends `GET /query/?action=queryweather&country=…&area=…&city=…&date=dd.MM.yyyy` and
    expects one line per day: `day:month:year:0:0:temperature:visibility:type:0`
    (the fourth, fifth and ninth fields are not used by the game);
-5. uses the weather type to pick a row of `weatherinfo.lhw` (clouds, rain, lightning,
+6. uses the weather type to pick a row of `weatherinfo.lhw` (clouds, rain, lightning,
    storms, wind) and combines it with the temperature and visibility. Its debug message
    for this is *"Got weather for Country: %s, Area: %s, City: %s Weathertype: %ld,
    Temp: %ld, Visibility: %ld"*.
@@ -89,6 +92,7 @@ BWWeather replaces these functions:
 |---|---|
 | `LHHttp2::Open` | For the weather server: doesn't connect and remembers the connection. Anything else goes to the original. |
 | `LHHttp2::PrepareRequest`, `HelperGetDocument`, `GetDocumentSize`, `GetDocument`, `Close`, `Reset`, destructor | For a weather connection: builds and returns the reply. Anything else goes to the original. |
+| weather code in `runblack.exe` (`005E9B54`) | When a town is set, the instruction that copies the game's "offline" result into the weather code's own flag is changed in memory, from `sete cl` to `xor cl,cl; nop`. So the weather code always counts as online, while the rest of the game keeps its own check. It's only applied if the bytes there are exactly those of v1.42. |
 | `LHNetGetCurrentProfileWString` | When the game's weather code asks for the `login name` and there is none, it returns the placeholder `BWWeather`. All other calls go to the original. |
 
 ### Weather types
@@ -127,8 +131,9 @@ first `@`.
 - **`bwweather.log` is missing:** BWWeather wasn't loaded. Check that
   `LHMultiplayerR_orig.dll` is in the game folder.
 - **The log shows no "game connects" line:** the game didn't run its weather code.
-  Check that `UseInternetWeatherSystem` is 0, and that the game thinks you're online:
-  it checks with `LHCheckForInternetConnection` at startup.
+  Check that `UseInternetWeatherSystem` is 0. The log should also contain *"weather code
+  set to always count as online"*. If it says the exe is not the expected v1.42, the
+  game's own online check (which always fails now) is still in the way.
 
 ## Antivirus warnings
 

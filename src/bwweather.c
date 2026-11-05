@@ -400,6 +400,36 @@ int __fastcall bww_GetProfileWString(void *ecx_unused, void *edx_unused) {
     return r;
 }
 
+/* The game decides whether it is online with LHCheckForInternetConnection,
+   which tries Lionhead's old www.bwgame.com and so always says "offline" now.
+   The weather code copies that result into its own "offline" flag and then
+   skips both requests:
+       005E9B4D  mov al,[00D01974]   ; online?
+       005E9B52  test al,al
+       005E9B54  sete cl             ; offline = !online
+       005E9B57  mov [ebp+0CCh],cl
+   Only for the weather code, "sete cl" becomes "xor cl,cl; nop" (never
+   offline). The rest of the game keeps its own online check. If the PC
+   really is offline, BWWeather's own weather fetch fails and the game gets
+   no weather, as before. */
+static void patch_online_check(void) {
+    static const BYTE expect[] = { 0xA0, 0x74, 0x19, 0xD0, 0x00, 0x84, 0xC0, 0x0F, 0x94, 0xC1, 0x88, 0x8D, 0xCC, 0x00, 0x00, 0x00 };
+    BYTE *p = (BYTE *)0x005E9B4D;
+    DWORD old;
+    HMODULE exe = GetModuleHandleA(NULL);
+    IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)((BYTE *)exe + ((IMAGE_DOS_HEADER *)exe)->e_lfanew);
+    if (exe != (HMODULE)0x00400000 || 0x00400000 + nt->OptionalHeader.SizeOfImage < 0x005E9B60 || memcmp(p, expect, sizeof expect)) {
+        logf("runblack.exe is not the expected v1.42 - the game's own online check is left alone");
+        return;
+    }
+    if (VirtualProtect(p + 7, 3, PAGE_EXECUTE_READWRITE, &old)) {
+        p[7] = 0x32; p[8] = 0xC9; p[9] = 0x90;          /* xor cl,cl ; nop */
+        VirtualProtect(p + 7, 3, old, &old);
+        FlushInstructionCache(GetCurrentProcess(), p + 7, 3);
+        logf("weather code set to always count as online (the game's online check uses the dead www.bwgame.com)");
+    }
+}
+
 /* ------------------------------------------------------------------ main */
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID r) {
     (void)r;
@@ -424,6 +454,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID r) {
                  cfg.country[0] ? ", " : "", cfg.country, cfg.server);
             th = CreateThread(NULL, 0, fetch_thread, NULL, 0, NULL);
             if (th) CloseHandle(th); else { InterlockedExchange(&wx.done, 1); SetEvent(g_fetchDone); }
+            patch_online_check();
         }
     }
     return TRUE;
