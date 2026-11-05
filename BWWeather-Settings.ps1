@@ -35,23 +35,25 @@ $Wmo = @{
     95 = 'thunderstorm'; 96 = 'thunderstorm with hail'; 99 = 'thunderstorm with heavy hail'
 }
 $Types = @{
-    2 = 'light rain or snow, showers'; 3 = 'drizzle'; 4 = 'clear'; 5 = 'storm (strong wind)'
-    6 = 'heavy rain or snow'; 7 = 'partly cloudy'; 8 = 'windy, hazy (not used for real weather)'
-    9 = 'rain or snow'; 10 = 'thunderstorm'; 11 = 'overcast or fog'; 12 = 'unknown (not used for real weather)'
+    2 = 'showers'; 3 = 'light snow'; 4 = 'clear'; 5 = 'thunderstorm'; 6 = 'rain'; 7 = 'sleet (rain and snow)'
+    8 = 'cloudy'; 9 = 'light rain'; 10 = 'blizzard'; 11 = 'heavy snow'; 12 = 'calm (not used for real weather)'
 }
 function Get-GameType([int]$code, [double]$wind) {
     $t = switch ($code) {
         { $_ -in 0, 1 } { 4; break }
-        2 { 7; break }
-        { $_ -in 3, 45, 48 } { 11; break }
-        { $_ -in 51, 53, 55, 56, 57 } { 3; break }
-        { $_ -in 61, 80, 71, 85 } { 2; break }
-        { $_ -in 63, 81, 73, 77 } { 9; break }
-        { $_ -in 65, 82, 66, 67, 75, 86 } { 6; break }
-        { $_ -in 95, 96, 99 } { 10; break }
-        default { 11 }
+        { $_ -in 2, 3, 45, 48 } { 8; break }
+        { $_ -in 51, 53, 55, 61 } { 9; break }
+        80 { 2; break }
+        { $_ -in 63, 65, 81, 82 } { 6; break }
+        { $_ -in 56, 57, 66, 67 } { 7; break }
+        { $_ -in 71, 77, 85 } { 3; break }
+        { $_ -in 73, 75, 86 } { 11; break }
+        { $_ -in 95, 96, 99 } { 5; break }
+        default { 8 }
     }
-    if ($wind -ge 60 -and $t -ne 10) { $t = 5 }
+    if ($wind -ge 60) {
+        if ($t -in 2, 6, 9) { $t = 5 } elseif ($t -in 3, 11) { $t = 10 }
+    }
     return $t
 }
 
@@ -84,7 +86,7 @@ Longitude=$($s.Longitude)
 ; --- testing ---
 ; Force one of the game's weather types (2 to 12) instead of the real weather. 0 = real weather.
 ForceType=$($s.ForceType)
-; Force a temperature in degrees Celsius (for example -5 to try snow). Empty = real temperature.
+; Force a temperature in degrees Celsius. Empty = real temperature. (Snow comes from the weather type, not the temperature.)
 ForceTemperature=$($s.ForceTemperature)
 "@
     try { [IO.File]::WriteAllText($Ini, ($text -replace "`r?`n", "`r`n"), [Text.Encoding]::Default) }
@@ -172,7 +174,7 @@ $ft = Add-Ctl (New-Object Windows.Forms.ComboBox) 125 21 403 24 $g3; $ft.DropDow
 foreach ($k in ($Types.Keys | Sort-Object)) { [void]$ft.Items.Add("$k - $($Types[$k])") }
 $l2 = Add-Ctl (New-Object Windows.Forms.Label) 12 53 110 20 $g3; $l2.Text = 'Temperature:'
 $tt = Add-Ctl (New-Object Windows.Forms.TextBox) 125 50 60 24 $g3
-$l3 = Add-Ctl (New-Object Windows.Forms.Label) 190 53 340 20 $g3; $l3.Text = "$deg" + 'C   (empty = real temperature; try -5 for snow)'
+$l3 = Add-Ctl (New-Object Windows.Forms.Label) 190 53 340 20 $g3; $l3.Text = "$deg" + 'C   (empty = real temperature)'
 
 $g4 = Add-Ctl (New-Object Windows.Forms.GroupBox) 10 408 540 132; $g4.Text = 'Did it work? (last time the game started)'
 $st = Add-Ctl (New-Object Windows.Forms.Label) 12 20 516 78 $g4

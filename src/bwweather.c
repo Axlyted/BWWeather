@@ -165,25 +165,34 @@ static void url_encode(const char *in, char *out, int outsz) {      /* UTF-8 per
 }
 
 /* The game's weather types are the rows of Scripts\weatherinfo.lhw (2..12).
-   Nothing in the game names them; this mapping from WMO weather codes is
-   read from what each row sets (clouds, rain, lightning, storms, wind).
-   The game decides between rain and snow from the temperature. */
+   Nothing in the game names them. The game's code (005E9470) copies each row
+   into its climate cell: rain amount (cell byte 1) from the row's value at
+   +04, snow amount (byte 2) from +14, and so on. Whether it rains or snows is
+   decided by those amounts, not by the temperature. What the rows set:
+     2 rain 40 (showers)            7 rain 30 + snow 30 (sleet)
+     3 snow 50 (light snow)         8 no rain, wind (cloudy)
+     4 nothing (clear)              9 rain 40, cloudier (light rain)
+     5 rain 100 + storm (thunder)  10 snow 100 + storm (blizzard)
+     6 rain 50 (rain)              11 snow 100 (heavy snow)
+                                   12 nothing (calm) */
 static int game_type(int wmo, double windKmh) {
     int t;
     switch (wmo) {
     case 0: case 1:                     t = 4;  break;  /* clear */
-    case 2:                             t = 7;  break;  /* partly cloudy */
-    case 3: case 45: case 48:           t = 11; break;  /* overcast, fog */
-    case 51: case 53: case 55:
-    case 56: case 57:                   t = 3;  break;  /* drizzle */
-    case 61: case 80: case 71: case 85: t = 2;  break;  /* light rain / snow / showers */
-    case 63: case 81: case 73: case 77: t = 9;  break;  /* moderate */
-    case 65: case 82: case 66: case 67:
-    case 75: case 86:                   t = 6;  break;  /* heavy */
-    case 95: case 96: case 99:          t = 10; break;  /* thunderstorm */
-    default:                            t = 11; break;
+    case 2: case 3: case 45: case 48:   t = 8;  break;  /* cloudy, overcast, fog */
+    case 51: case 53: case 55: case 61: t = 9;  break;  /* drizzle, light rain */
+    case 80:                            t = 2;  break;  /* light showers */
+    case 63: case 65: case 81: case 82: t = 6;  break;  /* rain, heavy rain, showers */
+    case 56: case 57: case 66: case 67: t = 7;  break;  /* freezing drizzle/rain: sleet */
+    case 71: case 77: case 85:          t = 3;  break;  /* light snow */
+    case 73: case 75: case 86:          t = 11; break;  /* snow, heavy snow */
+    case 95: case 96: case 99:          t = 5;  break;  /* thunderstorm */
+    default:                            t = 8;  break;
     }
-    if (windKmh >= 60.0 && t != 10) t = 5;               /* gale: storm */
+    if (windKmh >= 60.0) {                               /* gale */
+        if (t == 2 || t == 6 || t == 9) t = 5;           /* rain storm */
+        else if (t == 3 || t == 11) t = 10;              /* blizzard */
+    }
     return t;
 }
 

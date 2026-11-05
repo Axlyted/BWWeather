@@ -35,8 +35,7 @@ To remove it, double-click **`Uninstall-BWWeather.bat`**. It puts the game's ori
 - **Your town:** search by name and pick from the matches. It saves the town, region,
   country and exact coordinates to `bwweather.ini`.
 - **Weather there right now:** the current weather and the game weather type it becomes.
-- **Testing:** force one of the game's weather types, or a temperature (for example −5 to
-  try snow), to see what each looks like in the game. Set *Real weather* and an empty
+- **Testing:** force one of the game's weather types, or a temperature, to see what each looks like in the game. Set *Real weather* and an empty
   temperature to go back.
 - **Did it work?:** reads `bwweather.log` and says in plain words whether the game asked for
   the weather and what it got. *Open log* shows the full log.
@@ -98,23 +97,42 @@ BWWeather replaces these functions:
 ### Weather types
 
 The game's weather types are the rows of `Scripts\weatherinfo.lhw`, numbered 2 to 12.
-Nothing in the game names them, so this mapping from Open-Meteo's
-[WMO weather codes](https://open-meteo.com/en/docs) is based on what each row sets:
+Nothing in the game names them. The game's code (`005E9470`) copies a row into its
+climate map: the rain amount comes from the row's value at offset `+04`, the snow amount
+from `+14`, and so on. **Rain or snow comes from the row, not from the temperature.** What
+the rows set:
+
+| Type | Row sets | Meaning |
+|---|---|---|
+| 2 | rain 40 | showers |
+| 3 | snow 50 | light snow |
+| 4 | nothing | clear |
+| 5 | rain 100, storm | thunderstorm |
+| 6 | rain 50 | rain |
+| 7 | rain 30, snow 30 | sleet |
+| 8 | no rain, some wind | cloudy |
+| 9 | rain 40, more cloud | light rain |
+| 10 | snow 100, storm | blizzard |
+| 11 | snow 100 | heavy snow |
+| 12 | nothing | calm |
+
+How Open-Meteo's [WMO weather codes](https://open-meteo.com/en/docs) are mapped:
 
 | Real weather (WMO code) | Game type |
 |---|---|
-| clear, mainly clear (0, 1) | 4 |
-| partly cloudy (2) | 7 |
-| overcast, fog (3, 45, 48) | 11 |
-| drizzle (51–57) | 3 |
-| light rain, snow or showers (61, 71, 80, 85) | 2 |
-| moderate (63, 73, 77, 81) | 9 |
-| heavy (65–67, 75, 82, 86) | 6 |
-| thunderstorm (95–99) | 10 |
-| wind of 60 km/h or more | 5 (storm) |
+| clear, mainly clear (0, 1) | 4 clear |
+| partly cloudy, overcast, fog (2, 3, 45, 48) | 8 cloudy |
+| drizzle, light rain (51, 53, 55, 61) | 9 light rain |
+| light showers (80) | 2 showers |
+| rain, heavy rain, showers (63, 65, 81, 82) | 6 rain |
+| freezing drizzle or rain (56, 57, 66, 67) | 7 sleet |
+| light snow, snow grains, light snow showers (71, 77, 85) | 3 light snow |
+| snow, heavy snow (73, 75, 86) | 11 heavy snow |
+| thunderstorm (95–99) | 5 thunderstorm |
+| rain with wind of 60 km/h or more | 5 thunderstorm |
+| snow with wind of 60 km/h or more | 10 blizzard |
 
-The game decides between rain and snow from the temperature. To see what each type looks
-like, use *Testing* in the settings window (or `ForceType` 2–12 and `ForceTemperature`
+To see what each type looks like, use *Testing* in the settings window (or `ForceType` 2–12
 in `bwweather.ini`).
 
 ## Building
