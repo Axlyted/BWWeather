@@ -1,0 +1,9 @@
+# build leftovers
+obj/
+*.obj
+*.exp
+*.lib
+*.pdb
+*.ilk
+# local logs
+*.log
